@@ -31,13 +31,13 @@ public class ControllerExceptionHandler {
                                                        HttpServletRequest request) {
         StandardError standardError = new StandardError(
                 System.currentTimeMillis(),
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.NOT_FOUND.value(),
                 "Evento não encontrado",
                 e.getMessage(),
                 request.getRequestURI()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(standardError);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
     }
 
     @ExceptionHandler(SubscriptionConflictException.class)

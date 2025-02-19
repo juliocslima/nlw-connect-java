@@ -1,5 +1,7 @@
 package br.com.nlw.events.service;
 
+import br.com.nlw.events.dto.SubscriptionRankingByUser;
+import br.com.nlw.events.dto.SubscriptionRankingItem;
 import br.com.nlw.events.dto.SubscriptionResponse;
 import br.com.nlw.events.model.Event;
 import br.com.nlw.events.model.Subscription;
@@ -12,7 +14,9 @@ import br.com.nlw.events.service.exceptions.IndicatorNotFoundException;
 import br.com.nlw.events.service.exceptions.SubscriptionConflictException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 public class SubscriptionService {
@@ -67,5 +71,28 @@ public class SubscriptionService {
 
         return new SubscriptionResponse(subscription.getSubscriptionNumber(), "http://codecraft.com/subscription/"+subscription.getEvent().getPrettyName()+"/"+subscription.getSubscriber().getId());
 
+    }
+
+    public List<SubscriptionRankingItem> getCompleteRanking(String prettyName) {
+        Event event = eventRepository.findByPrettyName(prettyName)
+                .orElseThrow(() -> new EventNotFoundException("Evento " + prettyName + " não encontrado"));
+
+        return subscriptionRepository.getSubscriptionRankingItems(event.getEventId());
+    }
+
+    public SubscriptionRankingByUser getRankingByUser(String prettyName, Integer userId) {
+        List<SubscriptionRankingItem> ranking = getCompleteRanking(prettyName);
+
+        SubscriptionRankingItem item = ranking.stream().filter(user -> user.userId().equals(userId)).findFirst().orElse(null);
+
+        if(item == null) {
+            throw new IndicatorNotFoundException("Não há indicações para o inscrito: " + userId + " neste evento");
+        }
+
+        int position = IntStream.range(0, ranking.size())
+                .filter(pos -> ranking.get(pos).userId().equals(userId))
+                .findFirst().getAsInt();
+
+        return new SubscriptionRankingByUser(item, position + 1);
     }
 }
