@@ -67,7 +67,7 @@ public class SubscriptionService {
         subscription.setSubscriber(user);
         subscription.setIndication(indicator);
 
-        subscriptionRepository.save(subscription);
+        subscription = subscriptionRepository.save(subscription);
 
         return new SubscriptionResponse(subscription.getSubscriptionNumber(), "http://codecraft.com/subscription/"+subscription.getEvent().getPrettyName()+"/"+subscription.getSubscriber().getId());
 
